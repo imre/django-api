@@ -13,38 +13,28 @@
 #                                                               #
 #################################################################
 
-#  Core
+# Core
 location              = "UK South"
-suffix                = "a1b2"                      # lock the imported suffix
+project_name          = "django-api"
+suffix                = ""                      # leave blank to let Terraform generate it
 
-resource_group_name   = "django-api"
-acr_name              = "djangoapiacr"
-app_service_plan_name = "django-api-plan"
-web_app_name          = "django-api"
+# Database credentials
+db_admin_username     = "djangoadmin"
+db_admin_password     = "YourPostgresPassword"
 
-#  Database
-postgresql_server_name = "django-api-db-a1b2"
-db_admin_username      = "django-api-db-username"
-db_admin_password      = "<STRONG-POSTGRES-PASSWORD>"   # sensitive
-db_name                = "django-api-db"
+# Storage
+storage_container_name = "django-api-storage"
 
-#  Storage
-storage_account_name   = "djangoapistorage"
-storage_container_name = "django-api-folder-name"
+# Docker image
+image_tag = "latest"
 
-#  Docker image / Container Registry
-image_name = "django-api"
-image_tag  = "latest"
+# Django settings
+secret_key                = "YourDjangoSecretKey"
+django_superuser_username = "admin"
+django_superuser_email    = "admin@example.com"
+django_superuser_password = "YourSuperuserPassword"
+allowed_hosts             = ".azurewebsites.net"
+debug                     = "0"     # "0" for False, "1" for True
 
-#  Django application settings
-secret_key  = "<DJANGO-SECRET-KEY>"               # sensitive
-allowed_hosts = ".azurewebsites.net"
-debug          = "0"                              # "0" for False, "1" for True
-
-# Sentry
-sentry_dsn = "https://<key>@o<org>.ingest.sentry.io/<project>"
-
-# Django super‑user
-django_superuser_username = "username"
-django_superuser_email    = "email@example.com"
-django_superuser_password = "<STRONG-SUPERUSER-PASSWORD>"   # sensitive
+# Sentry (optional)
+# sentry_dsn = "https://<key>@o<org>.ingest.sentry.io/<project>"

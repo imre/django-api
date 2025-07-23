@@ -19,7 +19,7 @@ locals {
   acr_name              = "${local.safe}acr${local.suffix}"
   storage_account_name  = "${local.safe}st${local.suffix}"
   service_plan_name     = "${var.project_name}-plan-${local.suffix}"
-  web_app_name          = "${var.project_name}-${local.suffix}-web"
+  web_app_name          = "${var.project_name}-${local.suffix}"
   db_server_name        = "${var.project_name}-dbsvr-${local.suffix}"
   db_name               = "${var.project_name}db${local.suffix}"
 }
@@ -117,6 +117,7 @@ resource "azurerm_linux_web_app" "web" {
       docker_registry_password = azurerm_container_registry.acr.admin_password
     }
 
+    # Make sure project name contains only underscores `_` and no hyphens `-`
     app_command_line = "gunicorn ${var.project_name}.wsgi:application --bind 0.0.0.0:8000 --workers 3"
   }
 
