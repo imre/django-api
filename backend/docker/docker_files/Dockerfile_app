@@ -1,0 +1,25 @@
+# Use the arm64 variant of the python:3.10 image
+FROM --platform=linux/arm64 python:3.10-slim-bullseye
+
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
+
+# Install OS-level dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    netcat-openbsd \
+    gettext \
+    httpie \
+    # Clean up apt cache
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir flask
+
+# Set work directory and copy application
+WORKDIR /code
+COPY ./server.py .
+
+# Set the entrypoint
+ENTRYPOINT ["python", "./server.py"]

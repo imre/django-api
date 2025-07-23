@@ -1,0 +1,87 @@
+# .github/workflows/deploy.yml
+name: Build, Tag & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ${{ secrets.ACR_LOGIN_SERVER }}/django_api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.tag.outputs.IMAGE_TAG }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Determine image tag
+        id: tag
+        run: |
+          # Use commit SHA as tag
+          echo "IMAGE_TAG=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username:     ${{ secrets.ACR_USERNAME }}
+          password:     ${{ secrets.ACR_PASSWORD }}
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ steps.tag.outputs.IMAGE_TAG }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Build and push Docker image
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag $IMAGE_NAME:${{ steps.tag.outputs.IMAGE_TAG }} \
+            --tag $IMAGE_NAME:latest \
+            --cache-to type=local,dest=/tmp/.buildx-cache \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            -f backend/docker/docker_files/Dockerfile .
+          docker push $IMAGE_NAME:${{ steps.tag.outputs.IMAGE_TAG }}
+          docker push $IMAGE_NAME:latest
+
+      - name: Logout of Azure
+        run: az logout
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.WEBAPP_NAME }}
+          images: |
+            ${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }}
+
+      - name: Logout of Azure
+        run: az logout
