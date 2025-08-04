@@ -41,15 +41,15 @@ DEBUG=0                              # (0 = False)
 DJANGO_ALLOWED_HOSTS=django-api-<suffix>.azurewebsites.net
 
 DB_ENGINE=django.contrib.gis.db.backends.postgis
-DB_HOST=dialectdbsvr-<suffix>.postgres.database.azure.com
+DB_HOST=djangodbsvr-<suffix>.postgres.database.azure.com
 DB_PORT=5432
-DB_NAME=dialectdb
-DB_USER=djangoadmin@dialectdbsvr-<suffix>
+DB_NAME=djangodb
+DB_USER=djangoadmin@djangodbsvr-<suffix>
 DB_PASSWORD=your-db-password
 
-AZURE_ACCOUNT_NAME=dialectstorage<suffix>
+AZURE_ACCOUNT_NAME=djangostorage<suffix>
 AZURE_ACCOUNT_KEY=your-storage-key
-AZURE_CONTAINER=voice-recordings
+AZURE_CONTAINER=django-container-name
 
 SENTRY_DSN=https://<your-sentry-dsn>
 ```
